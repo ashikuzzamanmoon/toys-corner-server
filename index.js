@@ -46,7 +46,9 @@ async function run() {
 
 
     app.get('/addToys/:email',async(req,res)=>{
-        
+        const email=req.params.email;
+        const result=await toysCollection.find({email:email}).toArray();
+        res.send(result)
     })
 
     app.get('/addToys',async(req,res)=>{
