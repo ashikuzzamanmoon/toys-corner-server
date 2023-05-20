@@ -64,10 +64,26 @@ async function run() {
       res.send(result)
     })
 
-    app.delete('/myToys/:id', async(req, res) => {
+    app.delete('/myToys/:id', async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await toysCollection.deleteOne(query);
+      res.send(result);
+    })
+
+    app.patch('/myToys/:id', async (req, res) => {
+      const user = req.body;
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true}
+      const updateUser = {
+        $set: {
+          price: user.price,
+          quantity: user.quantity,
+          description: user.description
+        }
+      }
+      const result = await toysCollection.updateOne(filter, updateUser, options)
       res.send(result);
     })
 
