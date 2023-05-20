@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,36 +24,51 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     // gallery
     const toysGallery = client.db('toysGalleryDB').collection('toys')
-    
-    app.get('/toysGallery', async(req, res) => {
-        const result = await toysGallery.find().toArray();
-        res.send(result);
+
+    app.get('/toysGallery', async (req, res) => {
+      const result = await toysGallery.find().toArray();
+      res.send(result);
     })
+
 
     const database = client.db("toysDB");
-    const toysCollection= database.collection("myToys");
+    const toysCollection = database.collection("myToys");
 
 
-    app.post('/addToys',async(req,res)=>{
-        const data=req.body;
-          const result=await toysCollection.insertOne(data)
-          res.send(result)
+    app.post('/addToys', async (req, res) => {
+      const data = req.body;
+      const result = await toysCollection.insertOne(data)
+      res.send(result)
     })
 
 
-    app.get('/addToys/:email',async(req,res)=>{
-        const email=req.params.email;
-        const result=await toysCollection.find({email:email}).toArray();
-        res.send(result)
+    app.get('/addToys/:email', async (req, res) => {
+      const email = req.params.email;
+      const result = await toysCollection.find({ email: email }).toArray();
+      res.send(result)
     })
 
-    app.get('/addToys',async(req,res)=>{
-        const result=await toysCollection.find().toArray();
-        res.send(result)
+    app.get('/addToys', async (req, res) => {
+      const result = await toysCollection.find().toArray();
+      res.send(result)
+    })
+
+    app.get('/details/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await toysCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.delete('/myToys/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id)}
+      const result = await toysCollection.deleteOne(query);
+      res.send(result);
     })
 
     // Send a ping to confirm a successful connection
@@ -68,9 +83,9 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('Toys Server')
+  res.send('Toys Server')
 })
 
 app.listen(port, () => {
-    console.log(`Toy Server is running on port ${5000}`);
+  console.log(`Toy Server is running on port ${5000}`);
 })
