@@ -39,6 +39,21 @@ async function run() {
     const toysCollection = database.collection("myToys");
 
 
+    const index={toyName:1}
+    const option={name:"toyIndex"}
+    const result=toysCollection.createIndex(index,option)
+    app.get('/toys/:text',async(req,res)=>{
+      const text=req.params.text;
+      const result=await toysCollection.find({
+        $or:[
+          {toyName:{$regex:text,$options:'i'}}
+        ]
+      }).toArray();
+      res.send(result)
+    })
+
+
+
     app.post('/addToys', async (req, res) => {
       const data = req.body;
       const result = await toysCollection.insertOne(data)
@@ -48,13 +63,20 @@ async function run() {
 
     app.get('/addToys/:email', async (req, res) => {
       const email = req.params.email;
-      const result = await toysCollection.find({ email: email }).toArray();
+      const sort=req?.query?.sort===true?1:-1
+      const result = await toysCollection.find({ email: email }).sort({price:sort}).toArray();
       res.send(result)
     })
 
     app.get('/addToys', async (req, res) => {
-      const result = await toysCollection.find().toArray();
+      const result = await toysCollection.find({}).limit(20).toArray();
       res.send(result)
+    })
+
+    app.get('/allToys/:text',async(req,res)=>{
+      const text=req.params.text;
+      const result=await toysCollection.find({subCategory:text}).toArray();
+      res.send(result);
     })
 
     app.get('/details/:id', async (req, res) => {
@@ -64,6 +86,9 @@ async function run() {
       res.send(result)
     })
 
+
+
+
     app.delete('/myToys/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
@@ -71,9 +96,10 @@ async function run() {
       res.send(result);
     })
 
-    app.patch('/myToys/:id', async (req, res) => {
+    app.patch('/mytoys/:id', async (req, res) => {
       const user = req.body;
       const id = req.params.id;
+      // console.log(id);
       const filter = { _id: new ObjectId(id) }
       const options = { upsert: true}
       const updateUser = {
